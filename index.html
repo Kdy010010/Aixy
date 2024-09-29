@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -33,7 +33,7 @@
   const loadButton = document.getElementById('loadButton');
 
   // 초기 설정
-  const player = { x: 50, y: 50, size: 20, speed: 20 };
+  let player = { x: 50, y: 50, size: 20, speed: 20 };
   const goal = { x: 350, y: 350, size: 20 };
   let timeLimit = 30;  // 30초 제한
   let startTime = Date.now();
@@ -44,11 +44,7 @@
   let aiMemory = []; // AI가 학습한 행동을 저장
   let maxIterations = 1000; // 최대 반복 횟수
   let iteration = 0;
-
-  // 장애물 (비활성화 상태로 넣어둠)
-  const obstacles = [
-    { x: 150, y: 150, width: 50, height: 50 }, // 예시 장애물
-  ];
+  let isGameOver = false;  // 게임 상태 체크
 
   // 목표와의 거리 계산 함수
   function getDistance(a, b) {
@@ -112,17 +108,22 @@
     startTime = Date.now();
     iteration = 0;
     penalty += 5;  // 패널티 부여 (AI 속도를 줄임)
+    isGameOver = false;  // 게임 종료 상태 리셋
+    gameLoop();  // 게임 루프 재시작
   }
 
   // 게임 루프
   function gameLoop() {
+    if (isGameOver) return;  // 게임이 끝나면 루프 종료
+
     const currentTime = Date.now();
     const elapsedTime = Math.floor((currentTime - startTime) / 1000);
     const remainingTime = timeLimit - elapsedTime;
 
     if (remainingTime <= 0 || iteration >= maxIterations) {
       alert('시간 초과! 패널티 적용 후 다시 시작합니다.');
-      resetGame();
+      isGameOver = true;
+      resetGame();  // 게임을 다시 시작
       return;
     }
 
@@ -136,14 +137,6 @@
     // 목표 그리기
     ctx.fillStyle = 'green';
     ctx.fillRect(goal.x, goal.y, goal.size, goal.size);
-
-    // 장애물 그리기 (현재 비활성화 상태)
-    /*
-    ctx.fillStyle = 'red';
-    for (const obstacle of obstacles) {
-      ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-    }
-    */
 
     // 남은 시간 표시
     ctx.fillStyle = 'black';
@@ -159,6 +152,7 @@
         player.y < goal.y + goal.size &&
         player.y + player.size > goal.y) {
       alert('AI가 목표에 도달했습니다!');
+      isGameOver = true;
       return;
     }
 
